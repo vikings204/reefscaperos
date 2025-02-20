@@ -1,0 +1,17 @@
+bool a
+bool b
+bool x
+bool y
+bool lb
+bool rb
+bool back
+bool start
+bool lsb
+bool rsb
+float64 lsx
+float64 lsy
+float64 rsx
+float64 rsy
+int64 pov
+float64 lt
+float64 rt

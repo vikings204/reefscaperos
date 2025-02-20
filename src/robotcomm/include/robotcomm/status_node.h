@@ -4,9 +4,6 @@
 
 #ifndef STATUS_NODE_H
 #define STATUS_NODE_H
-#include <std_msgs/msg/detail/int64__struct.hpp>
-
-#endif //STATUS_NODE_H
 
 #include <memory>
 
@@ -57,3 +54,4 @@ private:
     int cached_fmsconnected = false;
 };
 
+#endif //STATUS_NODE_H

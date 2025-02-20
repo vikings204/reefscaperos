@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(robotcomm)
+project(swerve)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -8,23 +8,15 @@ endif()
 # deps
 include(/home/team204/ros2_ws/src/commondeps.cmake)
 
+add_executable(swerve src/swerve.cpp)
+target_include_directories(swerve PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+target_compile_features(swerve PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
+ament_target_dependencies(swerve rclcpp std_msgs)
+target_link_libraries(swerve revlib wpilibc hal)
 
-
-add_executable(status src/status_node.cpp)
-target_include_directories(status PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>)
-target_compile_features(status PUBLIC c_std_99 cxx_std_17)
-ament_target_dependencies(status rclcpp std_msgs)
-target_link_libraries(status cppzmq msgpack)
-
-
-rosidl_generate_interfaces(robotcomm
-        "msg/Xbox.msg"
-)
-
-
-install(TARGETS status
+install(TARGETS swerve
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
