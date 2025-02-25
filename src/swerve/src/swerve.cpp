@@ -3,7 +3,7 @@
 #include <rev/SparkMax.h>
 #include <chrono>
 #include <thread>
-#include <hal/hal/HALBase.h>
+#include <hal/HALBase.h>
 
 int main(int argc, char ** argv)
 {
