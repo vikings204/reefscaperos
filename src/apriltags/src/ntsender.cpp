@@ -36,7 +36,7 @@ int main(int argc, char ** argv)
   uint32_t num_detections;
   std::vector<cuAprilTagsID_t> tags(10);
 
-  const cudaError_t mallocErr = cudaMalloc(&imageInput.dev_ptr, 1304 * 1600 * sizeof(uchar3) * 8);
+  const cudaError_t mallocErr = cudaMalloc(&imageInput.dev_ptr, 1304 * 1600 * sizeof(uchar3));
   std::cout << "malloc error: " << cudaGetErrorString(mallocErr) << "\n";
 
   while (true) {
@@ -44,7 +44,7 @@ int main(int argc, char ** argv)
     cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB);
     std::cout << "capt\n";
 
-    const cudaError_t memcpyErr = cudaMemcpy(imageInput.dev_ptr, frame.data, 1304 * 1600*sizeof(uchar3)*8, cudaMemcpyHostToDevice); // seg fault
+    const cudaError_t memcpyErr = cudaMemcpy(imageInput.dev_ptr, frame.data, 1304 * 1600 * sizeof(uchar3), cudaMemcpyHostToDevice);
     std::cout << "memcpy error: " << cudaGetErrorString(memcpyErr) << "\n";
     imageInput.width = frame.cols;
     imageInput.height = frame.rows;
