@@ -26,7 +26,10 @@ target_compile_features(sample_node PUBLIC c_std_99 cxx_std_17)  # Require C99 a
 ament_target_dependencies(sample_node rclcpp std_msgs geometry_msgs)
 target_link_libraries(sample_node ${CUDA_LIBRARIES} ${OpenCV_LIBS} libcuapriltags)
 
-install(TARGETS sample_node
+add_executable(ntsender src/ntsender.cpp)
+target_link_libraries(ntsender ${CUDA_LIBRARIES} ${OpenCV_LIBS} libcuapriltags ntcore)
+
+install(TARGETS sample_node ntsender
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)

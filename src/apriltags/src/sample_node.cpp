@@ -2,6 +2,7 @@
 #include "cuda_runtime.h"
 #include "opencv2/opencv.hpp"
 #include "cuAprilTags.h"
+#include <chrono>
 
 void loadImageToCuAprilTagsInput(const std::string& imagePath, cuAprilTagsImageInput_t& inputImage) {
   // Load image using OpenCV
@@ -22,11 +23,8 @@ void loadImageToCuAprilTagsInput(const std::string& imagePath, cuAprilTagsImageI
 
   cudaMalloc(&inputImage.dev_ptr, img.rows * img.cols * sizeof(uchar3) * 8);
   cudaError_t memcpyErr = cudaMemcpy(inputImage.dev_ptr, img.data, img.rows * img.cols*sizeof(uchar3)*8, cudaMemcpyHostToDevice); // skeptical
-  std::cout << cudaGetErrorString(memcpyErr) << "\n";
+  std::cout << "memcpy error: " << cudaGetErrorString(memcpyErr) << "\n";
 
-  // cv::Mat outimg(img.rows, img.cols, CV_8UC3);
-  // outimg.create(img.rows, img.cols, CV_8UC3);
-  // cv::UMat
   unsigned char* data = new unsigned char[img.rows * img.cols * sizeof(uchar3) * 8];
   cudaMemcpy(data, inputImage.dev_ptr, img.rows * img.cols * sizeof(uchar3) * 8, cudaMemcpyDeviceToHost);
   cv::Mat outimg(img.rows, img.cols, CV_8UC3, data);
@@ -52,18 +50,16 @@ int main(int argc, char ** argv)
 
 
   cuAprilTagsCameraIntrinsics_t intrinsics{
-    .fx = 1991.333,
-    .fy = 1982.145,
-    .cx = 766.253,
-    .cy = 652.362,
+    1991.333,
+    1982.145,
+    766.253,
+    652.362,
   };
   cuAprilTagsHandle detector = nullptr;
   cudaStream_t stream = {};
 
   const int error = nvCreateAprilTagsDetector(&detector, 1600, 1304, 4, cuAprilTagsFamily::NVAT_TAG36H11, &intrinsics, 0.1651);
-  if (error != 0) {
-    throw std::runtime_error("Failed to create cuAprilTags detector (error code " + std::to_string(error) + ")");
-  }
+  std::cout << "create error code: " << error << "\n";
   auto streamErr = cudaStreamCreate(&stream);
   if (streamErr != 0) {
     std::cout << cudaGetErrorString(streamErr);
@@ -71,19 +67,22 @@ int main(int argc, char ** argv)
 
   uint32_t num_detections;
   std::vector<cuAprilTagsID_t> tags(10);
-  std::cout << "iso begin\n";
+  auto timeStart = std::chrono::high_resolution_clock::now();
   const int error2 = cuAprilTagsDetect(detector, &inputImage, tags.data(), &num_detections, 10, stream);
-  for (auto tag: tags) {
-    std::cout<<tag.id<<"\n";
-  }
-  std::cout << "iso end\n";
-  if (error2 != 0) {
-    throw std::runtime_error("Failed to run AprilTags detector (error code " + std::to_string(error2) + ")");
-  }
+  auto timeEnd = std::chrono::high_resolution_clock::now();
+  std::cout << "detect error code: " << error2 << "\n";
+
+  std::chrono::duration<double> timeElapsed = timeEnd - timeStart;
+  std::cout << "elapsed time for detection: " << timeElapsed.count() << " s\n";
+  std::cout << "estimated fps: " << 1 / timeElapsed.count() << "\n";
 
   if (num_detections > 0) {
-    std::cout << "first id found: " << tags[0].id << "\n";
-    std::cout << tags[0].translation[0] << "," << tags[0].translation[1] << "," << tags[0].translation[2] << "\n";
+    for (auto t : tags) {
+      if (t.id == 0) {
+        continue;
+      }
+      std::cout << "id=" << t.id << " tx=" << t.translation[0] << " ty=" << t.translation[1] << " tz=" << t.translation[2] << "\n";
+    }
   } else {
     std::cout << "no detections.\n";
   }
