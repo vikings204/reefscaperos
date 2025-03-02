@@ -7,6 +7,7 @@ endif()
 
 # deps
 include(/home/team204/ros2_ws/src/commondeps.cmake)
+find_package(vikings_msgs REQUIRED)
 
 
 
@@ -18,13 +19,17 @@ target_compile_features(status PUBLIC c_std_99 cxx_std_17)
 ament_target_dependencies(status rclcpp std_msgs)
 target_link_libraries(status cppzmq msgpack)
 
+add_executable(xbox src/xbox_node.cpp)
+target_include_directories(xbox PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>)
+target_compile_features(xbox PUBLIC c_std_99 cxx_std_17)
+ament_target_dependencies(xbox rclcpp std_msgs vikings_msgs)
+target_link_libraries(xbox cppzmq msgpack)
 
-rosidl_generate_interfaces(robotcomm
-        "msg/Xbox.msg"
-)
 
 
-install(TARGETS status
+install(TARGETS status xbox
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
