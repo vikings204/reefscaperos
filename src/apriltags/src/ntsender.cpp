@@ -3,7 +3,9 @@
 #include "cuAprilTags.h"
 #include <networktables/NetworkTableInstance.h>
 #include <networktables/NetworkTable.h>
-#include <networktables/DoubleArrayTopic.h>
+#include <networktables/DoubleTopic.h>
+#include <networktables/IntegerTopic.h>
+#include <eigen3/Eigen/Dense>
 
 int main(int argc, char ** argv)
 {
@@ -23,20 +25,22 @@ int main(int argc, char ** argv)
     auto inst = nt::NetworkTableInstance::GetDefault();
     auto table = inst.GetTable("datatable");
     inst.StartClient4("jetson");
-    inst.SetServerTeam(204);  // where TEAM=190, 294, etc, or use inst.setServer("hostname") or similar
+    inst.SetServerTeam(204);
     inst.StartDSClient();
-    auto nt_ids_pub = table->GetDoubleArrayTopic("ids").Publish();
-    auto nt_tx_pub = table->GetDoubleArrayTopic("tx").Publish();
-    auto nt_ty_pub = table->GetDoubleArrayTopic("ty").Publish();
-    auto nt_tz_pub = table->GetDoubleArrayTopic("tz").Publish();
-    std::vector<double> nt_ids(22);
-    std::vector<double> nt_tx(22);
-    std::vector<double> nt_ty(22);
-    std::vector<double> nt_tz(22);
-    nt_ids_pub.SetDefault(nt_ids);
-    nt_tx_pub.SetDefault(nt_tx);
-    nt_ty_pub.SetDefault(nt_ty);
-    nt_tz_pub.SetDefault(nt_tz);
+    auto nt_id_pub = table->GetIntegerTopic("id").Publish();
+    auto nt_tx_pub = table->GetDoubleTopic("tx").Publish();
+    auto nt_ty_pub = table->GetDoubleTopic("ty").Publish();
+    auto nt_tz_pub = table->GetDoubleTopic("tz").Publish();
+    auto nt_yaw_pub = table->GetDoubleTopic("yaw").Publish();
+    auto nt_pitch_pub = table->GetDoubleTopic("pitch").Publish();
+    auto nt_roll_pub = table->GetDoubleTopic("roll").Publish();
+    nt_id_pub.SetDefault(0);
+    nt_tx_pub.SetDefault(0);
+    nt_ty_pub.SetDefault(0);
+    nt_tz_pub.SetDefault(0);
+    nt_yaw_pub.SetDefault(0);
+    nt_pitch_pub.SetDefault(0);
+    nt_roll_pub.SetDefault(0);
 
     cuAprilTagsCameraIntrinsics_t intrinsics{
         1991.333,
@@ -67,43 +71,50 @@ int main(int argc, char ** argv)
     while (true) {
         cap >> frame;
         cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB);
-        std::cout << "capt\n";
+        //std::cout << "capt\n";
 
         const cudaError_t memcpyErr = cudaMemcpy(imageInput.dev_ptr, frame.data, 1304 * 1600 * sizeof(uchar3), cudaMemcpyHostToDevice);
-        std::cout << "memcpy error: " << cudaGetErrorString(memcpyErr) << "\n";
+        //std::cout << "memcpy error: " << cudaGetErrorString(memcpyErr) << "\n";
         imageInput.width = frame.cols;
         imageInput.height = frame.rows;
         imageInput.pitch = frame.cols*sizeof(uchar3);
 
         const int error2 = cuAprilTagsDetect(detector, &imageInput, tags.data(), &num_detections, tags.capacity(), stream);
-        std::cout << "detect error code: " << error2 << "\n";
-
-        nt_ids.clear();
-        nt_tx.clear();
-        nt_ty.clear();
-        nt_tz.clear();
+        //std::cout << "detect error code: " << error2 << "\n";
 
         if (num_detections > 0) {
             for (auto t : tags) {
-                if (t.id == 0) {
-                    continue;
+                if (t.id == 6 || t.id == 7 || t.id == 8 || t.id == 9 || t.id == 10 || t.id == 11 || t.id == 17 || t.id == 18 || t.id == 19 || t.id == 20 || t.id == 21 || t.id == 22) {
+                    //std::cout << "id=" << t.id << " tx=" << t.translation[0] << " ty=" << t.translation[1] << " tz=" << t.translation[2] << " r0=" << t.orientation[0] << " r1=" << t.orientation[1] << " r2=" << t.orientation[2] << " r3=" << t.orientation[3] << " r4=" << t.orientation[4] << " r5=" << t.orientation[5] << " r6=" << t.orientation[6] << " r7=" << t.orientation[7] << " r8=" << t.orientation[8] << "\n";
+                    const Eigen::Map<const Eigen::Matrix<float, 3, 3, Eigen::ColMajor>>orientation(t.orientation);
+                    const Eigen::Quaternion<float> q(orientation);
+                    auto euler = q.toRotationMatrix().eulerAngles(0, 1, 2);
+                    double yaw = euler[1] * 180 / M_PI; // left-right
+                    double pitch = euler[0] * 180 / M_PI; // up-down
+                    double roll = euler[2] * 180 / M_PI; // turn
+
+                    // std::cout << "yaw=" << yaw << " pitch=" << pitch << " roll=" << roll << "\n";
+
+                    nt_id_pub.Set(t.id);
+                    nt_tx_pub.Set(t.translation[0]);
+                    nt_ty_pub.Set(t.translation[1]);
+                    nt_tz_pub.Set(t.translation[2]);
+                    nt_yaw_pub.Set(yaw);
+                    nt_pitch_pub.Set(pitch);
+                    nt_roll_pub.Set(roll);
+                    break;
                 }
-                std::cout << "id=" << t.id << " tx=" << t.translation[0] << " ty=" << t.translation[1] << " tz=" << t.translation[2] << " r0=" << t.orientation[0] << " r1=" << t.orientation[1] << " r2=" << t.orientation[2] << " r3=" << t.orientation[3] << " r4=" << t.orientation[4] << " r5=" << t.orientation[5] << " r6=" << t.orientation[6] << " r7=" << t.orientation[7] << " r8=" << t.orientation[8] << "\n";
-                nt_ids[t.id] = t.id;
-                nt_tx[t.id] = t.translation[0];
-                nt_ty[t.id] = t.translation[1];
-                nt_tz[t.id] = t.translation[2];
             }
         } else {
-            std::cout << "no detections.\n";
+            nt_id_pub.Set(0); // let java know that we lost the tag
+            //nt_tx_pub.Set(0);
+            //nt_ty_pub.Set(0);
+            //nt_tz_pub.Set(0);
+            //nt_yaw_pub.Set(0);
+            //nt_pitch_pub.Set(0);
+            //nt_roll_pub.Set(0);
+            //std::cout << "no detections.\n";
         }
-
-        std::cout << "pub\n";
-        nt_ids_pub.Set(std::span(nt_ids));
-        nt_tx_pub.Set(std::span(nt_tx));
-        nt_ty_pub.Set(std::span(nt_ty));
-        nt_tz_pub.Set(std::span(nt_tz));
-        std::cout << "done pub\n";
     }
 
   cudaFree(imageInput.dev_ptr);
