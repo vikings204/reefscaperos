@@ -1,0 +1,14 @@
+# copy to /etc/systemd/system/
+[Unit]
+Description=Starts the team 204 code
+After=multi-user.target
+
+[Service]
+Restart=on-failure
+RestartSec=5
+Type=simple
+ExecStart=/usr/bin/bash /home/team204/ros2_ws/startcmd.sh
+User=team204
+
+[Install]
+WantedBy=multi-user.target
