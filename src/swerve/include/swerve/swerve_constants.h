@@ -22,6 +22,31 @@ namespace Constants {
         const float DRIVE_PID_I = 0.0;
         const float DRIVE_PID_D = 0.01;
         const float DRIVE_PID_FF = 0.0;
+
+        namespace Mod0 {
+            const int DRIVE_MOTOR_ID = 11;
+            const int ANGLE_MOTOR_ID = 21;
+            const int CANCODER_ID = 31;
+            const float ANGLE_OFFSET_ROTS = 0.75;
+        }
+        namespace Mod1 {
+            const int DRIVE_MOTOR_ID = 12;
+            const int ANGLE_MOTOR_ID = 22;
+            const int CANCODER_ID = 32;
+            const float ANGLE_OFFSET_ROTS = 0.888;
+        }
+        namespace Mod2 {
+            const int DRIVE_MOTOR_ID = 10;
+            const int ANGLE_MOTOR_ID = 20;
+            const int CANCODER_ID = 30;
+            const float ANGLE_OFFSET_ROTS = 0.887;
+        }
+        namespace Mod3 {
+            const int DRIVE_MOTOR_ID = 13;
+            const int ANGLE_MOTOR_ID = 23;
+            const int CANCODER_ID = 33;
+            const float ANGLE_OFFSET_ROTS = 0.08;
+        }
     }
 }
 
