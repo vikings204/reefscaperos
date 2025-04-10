@@ -10,6 +10,8 @@ include(/home/team204/ros2_ws/src/commondeps.cmake)
 
 rosidl_generate_interfaces(vikings_msgs
         "msg/Xbox.msg"
+        "srv/DriveSwerve.srv"
+        "srv/Blank.srv"
 )
 ament_export_dependencies(rosidl_default_runtime)
 

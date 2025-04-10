@@ -7,7 +7,6 @@ endif()
 
 # deps
 include(/home/team204/ros2_ws/src/commondeps.cmake)
-find_package(vikings_msgs REQUIRED)
 
 
 

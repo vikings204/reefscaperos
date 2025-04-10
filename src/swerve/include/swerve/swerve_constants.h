@@ -15,6 +15,7 @@ namespace Constants {
         const float VOLTAGE_COMPENSATION = 12.0;
         const units::meter_t WHEEL_DIAMETER {4.0_in};
         const float DRIVE_GEAR_RATIO = 8.14;
+        const float ANGLE_POSITION_CONVERSION_FACTOR = 1 / ANGLE_GEAR_RATIO;
         const float DRIVE_POSITION_CONVERSION_FACTOR = (WHEEL_DIAMETER.value() * M_PI) / DRIVE_GEAR_RATIO;
         const float DRIVE_VELOCITY_CONVERSION_FACTOR = DRIVE_POSITION_CONVERSION_FACTOR / 60.0;
         const int DRIVE_CURRENT_LIMIT = 40;
@@ -22,6 +23,15 @@ namespace Constants {
         const float DRIVE_PID_I = 0.0;
         const float DRIVE_PID_D = 0.01;
         const float DRIVE_PID_FF = 0.0;
+
+        const auto WHEEL_BASE = 23_in;
+        const auto TRACK_WIDTH = 23_in;
+        const frc::SwerveDriveKinematics SWERVE_KINEMATICS{
+                frc::Translation2d{-WHEEL_BASE / 2.0, TRACK_WIDTH / 2.0},
+                frc::Translation2d{WHEEL_BASE / 2.0, TRACK_WIDTH / 2.0},
+                frc::Translation2d{-WHEEL_BASE / 2.0, -TRACK_WIDTH / 2.0},
+                frc::Translation2d{WHEEL_BASE / 2.0, -TRACK_WIDTH / 2.0}
+        };
 
         namespace Mod0 {
             const int DRIVE_MOTOR_ID = 11;

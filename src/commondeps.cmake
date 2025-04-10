@@ -11,6 +11,8 @@ find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 
+find_package(vikings_msgs REQUIRED)
+
 # regular libs
 find_package(cppzmq)
 add_library(msgpack INTERFACE)

@@ -25,9 +25,10 @@ public:
     frc::Rotation2d GetAngle();
     frc::SwerveModuleState GetState();
     frc::SwerveModulePosition GetPosition();
+    void ZeroDriveEncoder();
+    const int moduleNumber;
 
 private:
-    int moduleNumber;
     frc::Rotation2d lastAngle;
     frc::Rotation2d angleOffset;
 

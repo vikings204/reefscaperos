@@ -8,12 +8,12 @@ endif()
 # deps
 include(/home/team204/ros2_ws/src/commondeps.cmake)
 
-add_executable(swerve src/swerve.cpp src/swerve_module.cpp)
+add_executable(swerve src/swerve.cpp src/swerve_module.cpp src/swerve_node.cpp)
 target_include_directories(swerve PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 target_compile_features(swerve PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
-ament_target_dependencies(swerve rclcpp std_msgs)
+ament_target_dependencies(swerve rclcpp std_msgs vikings_msgs)
 target_link_libraries(swerve revlib wpilibc hal phoenix6)
 
 install(TARGETS swerve

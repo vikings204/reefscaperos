@@ -25,11 +25,13 @@ driveMotor{driveMotorID, rev::spark::SparkLowLevel::MotorType::kBrushless},
 driveEncoder{driveMotor.GetEncoder()},
 driveController{driveMotor.GetClosedLoopController()},
 feedforward{DRIVE_FF_S, DRIVE_FF_V, DRIVE_FF_A},
-lastAngle{GetState().angle}
+lastAngle{}
 {
     ConfigAngleEncoder();
     ConfigAngleMotor();
     ConfigDriveMotor();
+
+    lastAngle = GetState().angle;
 }
 
 void SwerveModule::ConfigAngleEncoder() {
@@ -44,7 +46,7 @@ void SwerveModule::ConfigAngleMotor() {
         .SmartCurrentLimit(20)
         .Inverted(true);
     angleConfig.encoder
-            .PositionConversionFactor(1/ANGLE_GEAR_RATIO) // radians
+            .PositionConversionFactor(ANGLE_POSITION_CONVERSION_FACTOR) // radians
             .VelocityConversionFactor(1); // radians per second
     angleConfig.closedLoop
             .SetFeedbackSensor(rev::spark::ClosedLoopConfig::FeedbackSensor::kPrimaryEncoder)
@@ -122,4 +124,8 @@ frc::SwerveModuleState SwerveModule::GetState() {
 
 frc::SwerveModulePosition SwerveModule::GetPosition() {
     return frc::SwerveModulePosition{units::length::meter_t{driveEncoder.GetPosition()}, GetAngle()};
+}
+
+void SwerveModule::ZeroDriveEncoder() {
+    driveEncoder.SetPosition(0.0);
 }

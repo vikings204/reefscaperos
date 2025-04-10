@@ -1,0 +1,6 @@
+float64 x #m/s
+float64 y #m/s
+float64 rot #rad/s
+bool teleop
+bool open_loop
+---
